@@ -8,6 +8,8 @@ from django.db import models
 from django.utils.timezone import utc
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from celery.task.control import revoke
+from .tasks import send_tweet
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
@@ -56,5 +58,19 @@ class TwitterAccount(models.Model):
         return account
 
 class ScheduledTweet(models.Model):
-    tweet_message = models.CharField(max_length=180)
+    tweet_message = models.TextField(max_length=180)
     release_date = models.DateTimeField()
+    task_id = models.CharField(max_length=100, null=True, editable=False)
+    
+    def __unicode__(self):
+        return self.tweet_message
+
+    def save(self, *args, **kwargs):
+        #if the task exists, kill it, just in case they updated the time.
+        if(self.task_id):
+            revoke(self.task_id)
+
+        task = send_tweet.apply_async((self.id,))
+
+        self.task_id = task.task_id
+        super(ScheduledTweet, self).save(*args, **kwargs)

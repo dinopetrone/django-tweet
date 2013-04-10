@@ -1,6 +1,6 @@
 from django.contrib import admin
 import logging
-from .models import TwitterAccount
+from .models import TwitterAccount, ScheduledTweet
 
 log = logging.getLogger(__name__)
 
@@ -15,3 +15,4 @@ class TwitterAccountAdmin(admin.ModelAdmin):
 
 
 admin.site.register(TwitterAccount, TwitterAccountAdmin)
+admin.site.register(ScheduledTweet)

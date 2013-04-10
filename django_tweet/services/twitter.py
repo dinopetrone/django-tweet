@@ -124,4 +124,14 @@ class TwitterAPI():
             tweets = response.get('statuses', [])
             #twitter responds back including the item 'max_id' have to pop it out
             
+    def tweet_message(self, message):
+        url = 'https://api.twitter.com/1.1/statuses/update.json'
+        oauth = OAuth1(    
+            self.client_key,
+            client_secret=self.client_secret,
+            resource_owner_key=self.resource_owner_key,
+            resource_owner_secret=self.resource_owner_secret
+        )
+        data = {'status':message}
+        requests.post(url=url, data=data, auth=oauth)
 
